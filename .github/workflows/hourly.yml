@@ -1,0 +1,24 @@
+name: Fetch IQAir Hourly
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # every hour
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - run: npm install
+
+      - run: npx ts-node scripts/fetchIQAir.ts
+        env:
+          IQAIR_API_KEY: ${{ secrets.IQAIR_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
