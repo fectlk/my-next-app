@@ -73,6 +73,26 @@ async function fetchIQAir() {
       console.error(`Error (${place.city}):`, error);
     }
   }
+
+  const { data: joinData, error: joinError } = await supabase
+  .from("aq_hourly_temp")
+  .select(`
+    aqi,
+    timestamp,
+    stations (
+      station_name,
+      lat,
+      lon
+    )
+  `)
+  .limit(5); // 👈 only fetch few rows
+
+if (joinError) {
+  console.error("JOIN Error:", joinError);
+} else {
+  console.log("JOIN TEST:", JSON.stringify(joinData, null, 2));
 }
+}
+
 
 fetchIQAir();
