@@ -90,7 +90,7 @@ export default function Home() {
           <AQCard
             key={`${r.stations.station_name}-${r.date}`}
             station_name={r.stations.station_name}
-            aqi={r.aqi}
+            aqi={Math.round(r.aqi)}
             date={r.date}
           />
         ))
