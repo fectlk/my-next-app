@@ -4,24 +4,37 @@ import { supabase } from "./supabaseClient";
 const API_KEY = process.env.IQAIR_API_KEY;
 
 const cities = [
+  // Central Province
   { city: "Akurana", state: "Central", country: "Sri Lanka" },
   { city: "Digana", state: "Central", country: "Sri Lanka" },
   { city: "Nuwara Eliya", state: "Central", country: "Sri Lanka" },
-  { city: "Dambulla", state: "Central", country: "Sri Lanka" },          // reported in Central area ranking :contentReference[oaicite:1]{index=1}
-  { city: "Nawalapitiya", state: "Central", country: "Sri Lanka" },      // reported in Central area ranking :contentReference[oaicite:2]{index=2}
-  { city: "Kandy", state: "Central", country: "Sri Lanka" },             // reported in Central area ranking :contentReference[oaicite:3]{index=3}
+  { city: "Dambulla", state: "Central", country: "Sri Lanka" },
+
+  // Western Province
+  { city: "Colombo", state: "Western", country: "Sri Lanka" },
+  { city: "Battaramulla", state: "Western", country: "Sri Lanka" },
+  { city: "Gampaha", state: "Western", country: "Sri Lanka" },
+
+  // North Western Province
   { city: "Kurunegala", state: "North Western", country: "Sri Lanka" },
-  { city: "Mirihana", state: "Western", country: "Sri Lanka" },
-  { city: "Colombo", state: "Western", country: "Sri Lanka" },           // major city – widely reported :contentReference[oaicite:4]{index=4}
-  { city: "Gampaha", state: "Western", country: "Sri Lanka" },           // included in Western rankings :contentReference[oaicite:5]{index=5}
-  { city: "Nugegoda", state: "Western", country: "Sri Lanka" },          // included in Western rankings :contentReference[oaicite:6]{index=6}
-  { city: "Battaramulla", state: "Western", country: "Sri Lanka" },       // included in Western rankings :contentReference[oaicite:7]{index=7}
-  { city: "Homagama", state: "Western", country: "Sri Lanka" },          // included in Western rankings :contentReference[oaicite:8]{index=8}
-  { city: "Pitipana", state: "Western", country: "Sri Lanka" },          // included in Western rankings :contentReference[oaicite:9]{index=9}
-  { city: "Negombo", state: "Western", country: "Sri Lanka" },
-  { city: "Anuradhapura", state: "North Central", country: "Sri Lanka" }, // appears in national rankings :contentReference[oaicite:10]{index=10}
-  { city: "Jaffna", state: "Northern Province", country: "Sri Lanka" },   // appears in national rankings :contentReference[oaicite:11]{index=11}
-  { city: "Ambalantota", state: "Southern Province", country: "Sri Lanka" } // from widget source :contentReference[oaicite:12]{index=12}
+
+  // North Central Province
+  { city: "Anuradhapura", state: "North Central", country: "Sri Lanka" },
+
+  // Northern Province
+  { city: "Jaffna", state: "Northern", country: "Sri Lanka" },
+
+  // Eastern Province
+  { city: "Batticaloa", state: "Eastern", country: "Sri Lanka" },
+
+  // Southern Province
+  { city: "Galle", state: "Southern", country: "Sri Lanka" },
+
+  // Sabaragamuwa Province
+  { city: "Ratnapura", state: "Sabaragamuwa", country: "Sri Lanka" },
+
+  // Uva Province
+  { city: "Bandarawela", state: "Uva", country: "Sri Lanka" }
 ];
 
 async function fetchIQAir() {
