@@ -14,7 +14,7 @@ async function fetchWithRetry(url: string, retries = 3) {
     if (data.status === "success") return data;
 
     console.log(`Retrying... (${i + 1}/${retries})`);
-    await sleep(2000);
+    await sleep(4000);
   }
   return null;
 }
@@ -44,22 +44,14 @@ async function fetchIQAir() {
   for (const place of cities) {
     try {
       const url = `http://api.airvisual.com/v2/nearest_city?lat=${place.lat}&lon=${place.lon}&key=${API_KEY}`;
-
-      let data: any = await fetchWithRetry(url);
-
+      const data: any = await fetchWithRetry(url);
+      
       if (!data) {
-        console.log(`⚠️ Falling back to nearest_city for ${place.city}`);
-      
-        const fallbackUrl = `http://api.airvisual.com/v2/nearest_city?lat=${place.lat}&lon=${place.lon}&key=${API_KEY}`;
-      
-        data = await fetchWithRetry(fallbackUrl);
-      
-        if (!data) {
-          console.log(`❌ No data for ${place.city} even after fallback`);
-          continue;
-        }
+        console.log(`❌ No data for ${place.city}`);
+        continue;
       }
-
+      
+      console.log(`Nearest AQI station for ${place.city}:`, data.data.city);
       // 🔹 Station object (STATIC DATA)
       const station = {
         station_id: `iqair_${place.city.toLowerCase().replace(/\s+/g, "_")}`,
