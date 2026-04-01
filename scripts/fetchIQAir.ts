@@ -5,6 +5,20 @@ const API_KEY = process.env.IQAIR_API_KEY;
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
+
+async function fetchWithRetry(url: string, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.status === "success") return data;
+
+    console.log(`Retrying... (${i + 1}/${retries})`);
+    await sleep(2000);
+  }
+  return null;
+}
+
 const cities = [
   // Central Province
   { city: "Akurana", state: "Central", country: "Sri Lanka" },
@@ -42,16 +56,14 @@ const cities = [
 async function fetchIQAir() {
   for (const place of cities) {
     try {
-      const response = await fetch(
-        `http://api.airvisual.com/v2/city?city=${place.city}&state=${place.state}&country=${place.country}&key=${API_KEY}`
-      );
+      const url = `http://api.airvisual.com/v2/city?city=${place.city}&state=${place.state}&country=${place.country}&key=${API_KEY}`;
 
-      const data: any = await response.json();
+const data: any = await fetchWithRetry(url);
 
-      if (data.status !== "success") {
-        console.log(`❌ No data for ${place.city}`);
-        continue;
-      }
+if (!data) {
+  console.log(`❌ No data for ${place.city} after retries`);
+  continue;
+}
 
       // 🔹 Station object (STATIC DATA)
       const station = {
