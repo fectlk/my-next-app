@@ -20,37 +20,24 @@ async function fetchWithRetry(url: string, retries = 3) {
 }
 
 const cities = [
-  // Central Province
-  { city: "Akurana", state: "Central", country: "Sri Lanka" },
-  { city: "Digana", state: "Central", country: "Sri Lanka" },
-  { city: "Nuwara Eliya", state: "Central", country: "Sri Lanka" },
-  { city: "Dambulla", state: "Central", country: "Sri Lanka" },
+  { city: "Akurana", state: "Central", country: "Sri Lanka", lat: 7.3928, lon: 80.6178 },
+  { city: "Digana", state: "Central", country: "Sri Lanka", lat: 7.2970, lon: 80.7600 },
+  { city: "Nuwara Eliya", state: "Central", country: "Sri Lanka", lat: 6.9708, lon: 80.7829 },
+  { city: "Dambulla", state: "Central", country: "Sri Lanka", lat: 7.4863, lon: 80.3623 },
 
-  // Western Province
-  { city: "Colombo", state: "Western", country: "Sri Lanka" },
-  { city: "Battaramulla", state: "Western", country: "Sri Lanka" },
-  { city: "Gampaha", state: "Western", country: "Sri Lanka" },
+  { city: "Colombo", state: "Western", country: "Sri Lanka", lat: 6.9271, lon: 79.8612 },
+  { city: "Battaramulla", state: "Western", country: "Sri Lanka", lat: 6.8990, lon: 79.9230 },
+  { city: "Gampaha", state: "Western", country: "Sri Lanka", lat: 7.0860, lon: 79.9990 },
 
-  // North Western Province
-  { city: "Kurunegala", state: "North Western", country: "Sri Lanka" },
+  { city: "Kurunegala", state: "North Western", country: "Sri Lanka", lat: 7.4867, lon: 80.3647 },
+  { city: "Anuradhapura", state: "North Central", country: "Sri Lanka", lat: 8.3114, lon: 80.4037 },
+  { city: "Jaffna", state: "Northern", country: "Sri Lanka", lat: 9.6615, lon: 80.0255 },
 
-  // North Central Province
-  { city: "Anuradhapura", state: "North Central", country: "Sri Lanka" },
+  { city: "Batticaloa", state: "Eastern", country: "Sri Lanka", lat: 7.7170, lon: 81.7000 },
+  { city: "Galle", state: "Southern", country: "Sri Lanka", lat: 6.0535, lon: 80.2210 },
 
-  // Northern Province
-  { city: "Jaffna", state: "Northern", country: "Sri Lanka" },
-
-  // Eastern Province
-  { city: "Batticaloa", state: "Eastern", country: "Sri Lanka" },
-
-  // Southern Province
-  { city: "Galle", state: "Southern", country: "Sri Lanka" },
-
-  // Sabaragamuwa Province
-  { city: "Ratnapura", state: "Sabaragamuwa", country: "Sri Lanka" },
-
-  // Uva Province
-  { city: "Bandarawela", state: "Uva", country: "Sri Lanka" }
+  { city: "Ratnapura", state: "Sabaragamuwa", country: "Sri Lanka", lat: 6.6828, lon: 80.3992 },
+  { city: "Bandarawela", state: "Uva", country: "Sri Lanka", lat: 6.8289, lon: 80.9870 }
 ];
 
 async function fetchIQAir() {
@@ -58,12 +45,20 @@ async function fetchIQAir() {
     try {
       const url = `http://api.airvisual.com/v2/city?city=${place.city}&state=${place.state}&country=${place.country}&key=${API_KEY}`;
 
-const data: any = await fetchWithRetry(url);
+      let data: any = await fetchWithRetry(url);
 
-if (!data) {
-  console.log(`❌ No data for ${place.city} after retries`);
-  continue;
-}
+      if (!data) {
+        console.log(`⚠️ Falling back to nearest_city for ${place.city}`);
+      
+        const fallbackUrl = `http://api.airvisual.com/v2/nearest_city?lat=${place.lat}&lon=${place.lon}&key=${API_KEY}`;
+      
+        data = await fetchWithRetry(fallbackUrl);
+      
+        if (!data) {
+          console.log(`❌ No data for ${place.city} even after fallback`);
+          continue;
+        }
+      }
 
       // 🔹 Station object (STATIC DATA)
       const station = {
