@@ -2,6 +2,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toPng } from "html-to-image";
+import { FiDownload } from "react-icons/fi";
 
 type Reading = {
   aqi: number;
@@ -18,6 +20,27 @@ type AQITableProps = {
 };
 
 export default function AQITable({ readings }: AQITableProps) {
+
+  const downloadImage = async () => {
+    if (!tableRef.current) return;
+  
+    // Hide buttons before capture
+    const buttons = tableRef.current.querySelectorAll("button");
+    buttons.forEach((btn) => (btn.style.display = "none"));
+  
+    const dataUrl = await toPng(tableRef.current, {
+      backgroundColor: "#ffffff",
+      pixelRatio: 2,
+    });
+  
+    // Restore buttons
+    buttons.forEach((btn) => (btn.style.display = "block"));
+  
+    const link = document.createElement("a");
+    link.download = "aq-card.png";
+    link.href = dataUrl;
+    link.click();
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -269,7 +292,14 @@ const dateRange =
 </tbody>
   </table>
 
-  <div className="mt-9 border border-gray-300 bg-slate-100 rounded-md p-4 inline-flex flex-wrap gap-4 items-center">
+  <button
+  onClick={downloadImage}
+  className="fixed bottom-16 right-2 p-3 bg-cyan-200 text-black rounded-full shadow-lg hover:bg-cyan-700 transition"
+>
+  <FiDownload size={20} />
+</button>
+
+  <div className="mt-5 border border-gray-300 bg-slate-100 rounded-md p-4 inline-flex flex-wrap gap-4 items-center">
   {aqiScale.map((scale) => (
     <div key={scale.label} className="flex items-center space-x-2">
       <div className={`w-4 h-4 ${scale.color} border border-black`}></div>
