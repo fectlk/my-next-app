@@ -26,6 +26,9 @@ export default function Home() {
         .select(`aqi,date,stations(station_name,lat,lon)`)
         .order("date", { ascending: false });
 
+        console.log("RAW DATA:", data);
+      console.log("ERROR:", error);
+
       if (error) {
         console.error("SUPABASE ERROR:", error);
         setLoading(false);
