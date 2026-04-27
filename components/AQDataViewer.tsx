@@ -51,6 +51,32 @@ export default function AQDataViewer({
     link.click();
   };
 
+  const downloadCSV = () => {
+    if (!data || data.length === 0) {
+      alert("No data to download");
+      return;
+    }
+  
+    const headers = ["Date", "AQI"];
+  
+    const rows = data.map((row) => [row.date, row.aqi]);
+  
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+  
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+  
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${stationName}_${fromDate}_to_${toDate}.csv`;
+  
+    link.click();
+  
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div ref={chartRef} className="bg-white p-6 rounded-lg shadow-md relative">
 

@@ -4,14 +4,14 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import AQDataViewer from "../../../components/AQDataViewer";
 
-// ✅ Station keys
+// Station keys
 type StationKey =
   | "akurana_av_outdoor"
   | "digana"
   | "akurana_pa"
   | "akurana_av_downstairs";
 
-// ✅ Labels
+// Labels
 const stationMap: Record<StationKey, string> = {
   akurana_av_outdoor: "Akurana AV Outdoor",
   digana: "Digana",
@@ -19,7 +19,7 @@ const stationMap: Record<StationKey, string> = {
   akurana_av_downstairs: "Akurana AV Downstairs",
 };
 
-// ✅ DB row type
+// DB row type
 type AQRow = {
   date: string;
   akurana_av_outdoor: number | string;
@@ -62,18 +62,43 @@ export default function AQTrendsPage() {
 
     const rows = data as AQRow[];
 
-    // ✅ SAFE + FIXED TRANSFORMATION
     const formatted = rows.map((row) => {
-      const value =
-        row[selectedStation as keyof AQRow];
+      const value = row[selectedStation];
 
       return {
-        date: new Date(row.date).toLocaleDateString(),
-        aqi: value !== null ? Number(value) : 0, // 🔥 FIX HERE
+        date: row.date,
+        aqi: value !== null && value !== "-" ? Number(value) : 0,
       };
     });
 
     setChartData(formatted);
+  };
+
+  // ✅ CSV DOWNLOAD FUNCTION (NOW IN PARENT)
+  const downloadCSV = () => {
+    if (chartData.length === 0) {
+      alert("No data to download");
+      return;
+    }
+
+    const headers = ["Date", "AQI"];
+
+    const rows = chartData.map((row) => [row.date, row.aqi]);
+
+    const csvContent = [headers, ...rows]
+      .map((r) => r.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${stationMap[selectedStation]}_${fromDate}_to_${toDate}.csv`;
+
+    link.click();
+
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -81,7 +106,7 @@ export default function AQTrendsPage() {
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-center mb-8 text-black">
-        AQI Trends Chart
+        AQI 
       </h1>
 
       {/* Controls */}
@@ -117,14 +142,21 @@ export default function AQTrendsPage() {
           className="border px-4 py-2 rounded"
         />
 
-        {/* Button */}
+        {/* Generate Chart Button */}
         <button
           onClick={fetchChartData}
-          className="bg-blue-600 text-black px-6 py-2 rounded"
+          className="bg-green-600 text-white px-6 p-2 ml-2 rounded hover:bg-green-700"
         >
           Generate Chart
         </button>
-        
+
+        {/* Download CSV Button */}
+        <button
+          onClick={downloadCSV}
+          className="bg-green-600 text-white px-6 p-2 ml-2 rounded hover:bg-green-700"
+        >
+          Download CSV
+        </button>
       </div>
 
       {/* Chart */}
