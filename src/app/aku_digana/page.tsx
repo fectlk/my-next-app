@@ -50,7 +50,7 @@ export default function AQTrendsPage() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  const [chartData, setChartData] = useState<{ date: string; aqi: number }[]>([]);
+  const [chartData, setChartData] = useState<{ date: string; aqi: number | null }[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [latestData, setLatestData] = useState<Record<StationKey, number | null>>({
@@ -108,7 +108,7 @@ export default function AQTrendsPage() {
       const value = row[selectedStation];
       return {
         date: row.date,
-        aqi: value !== null && value !== "-" ? Number(value) : 0,
+        aqi: value !== null && value !== "-" ? Number(value) : null,
       };
     });
 
@@ -128,7 +128,7 @@ export default function AQTrendsPage() {
       return;
     }
     const headers = ["Date", "AQI"];
-    const rows = chartData.map((row) => [row.date, row.aqi]);
+    const rows = chartData.map((row) => [row.date, row.aqi !== null ? row.aqi : ""]);
     const csvContent = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -141,12 +141,16 @@ export default function AQTrendsPage() {
 
   const recentRows = [...chartData].reverse().slice(0, 10);
 
+  const validAQIValues = chartData
+    .filter((d) => d.aqi !== null)
+    .map((d) => d.aqi as number);
+
   const avgAQI =
-    chartData.length > 0
-      ? Math.round(chartData.reduce((sum, d) => sum + d.aqi, 0) / chartData.length)
+    validAQIValues.length > 0
+      ? Math.round(validAQIValues.reduce((sum, v) => sum + v, 0) / validAQIValues.length)
       : null;
-  const maxAQI = chartData.length > 0 ? Math.max(...chartData.map((d) => d.aqi)) : null;
-  const minAQI = chartData.length > 0 ? Math.min(...chartData.map((d) => d.aqi)) : null;
+  const maxAQI = validAQIValues.length > 0 ? Math.max(...validAQIValues) : null;
+  const minAQI = validAQIValues.length > 0 ? Math.min(...validAQIValues) : null;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6", padding: "40px 16px" }}>
@@ -350,18 +354,18 @@ export default function AQTrendsPage() {
                 </thead>
                 <tbody>
                   {recentRows.map((row, i) => {
-                    const color = getAQIColor(row.aqi);
+                    const color = row.aqi !== null ? getAQIColor(row.aqi) : "#9ca3af";
                     return (
                       <tr key={i} style={{ borderBottom: "1px solid #f9fafb" }}>
                         <td style={{ padding: "12px 16px 12px 0", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
                           {row.date}
                         </td>
                         <td style={{ padding: "12px 16px 12px 0", fontWeight: "700", fontSize: "16px", color }}>
-                          {row.aqi}
+                          {row.aqi !== null ? row.aqi : "—"}
                         </td>
                         <td style={{ padding: "12px 0" }}>
                           <span style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "999px", fontWeight: "600", backgroundColor: color + "22", color }}>
-                            {getAQILabel(row.aqi)}
+                            {row.aqi !== null ? getAQILabel(row.aqi) : "N/A"}
                           </span>
                         </td>
                       </tr>
