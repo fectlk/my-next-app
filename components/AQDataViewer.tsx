@@ -112,7 +112,6 @@ export default function AQDataViewer({
             angle={-45}
             textAnchor="end"
             height={60}
-            interval={0}
             tick={{ fontSize: 12 }}
           />
           <YAxis domain={[0, 300]} />
