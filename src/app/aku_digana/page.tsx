@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "../../../lib/supabaseClient";
-import AQDataViewer from "../../../components/AQDataViewer";
+import { supabase } from "../../lib/supabaseClient";
+import AQDataViewer from "../../components/AQDataViewer";
 
 // Station keys
 type StationKey =
