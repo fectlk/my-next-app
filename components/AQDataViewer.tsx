@@ -31,8 +31,6 @@ export default function AQDataViewer({
   const chartRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
- 
-
   const downloadChart = async () => {
     if (!chartRef.current) return;
 
@@ -109,7 +107,14 @@ export default function AQDataViewer({
           <ReferenceArea y1={200} y2={300} fill="#7e22ce" fillOpacity={0.3} />
 
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
+          <XAxis 
+            dataKey="date" 
+            angle={-45}
+            textAnchor="end"
+            height={60}
+            interval={0}
+            tick={{ fontSize: 12 }}
+          />
           <YAxis domain={[0, 300]} />
           <Tooltip />
 
