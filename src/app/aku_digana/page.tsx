@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import AQDataViewer from "../../components/AQDataViewer";
+import { supabase } from "../../../lib/supabaseClient";
+import AQDataViewer from "../../../components/AQDataViewer";
 
 type StationKey =
   | "akurana_av_outdoor"
@@ -325,7 +325,9 @@ export default function AQTrendsPage() {
 
           {chartData.length > 0 ? (
             <AQDataViewer
-              data={chartData}
+            data={chartData.filter(
+              (d): d is { date: string; aqi: number } => d.aqi !== null
+            )}
               stationName={stationMap[selectedStation]}
               fromDate={fromDate}
               toDate={toDate}
