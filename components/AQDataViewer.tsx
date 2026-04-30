@@ -31,6 +31,8 @@ export default function AQDataViewer({
   const chartRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+ 
+
   const downloadChart = async () => {
     if (!chartRef.current) return;
 
@@ -107,13 +109,7 @@ export default function AQDataViewer({
           <ReferenceArea y1={200} y2={300} fill="#7e22ce" fillOpacity={0.3} />
 
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="date" 
-            angle={-45}
-            textAnchor="end"
-            height={60}
-            tick={{ fontSize: 12 }}
-          />
+          <XAxis dataKey="date" />
           <YAxis domain={[0, 300]} />
           <Tooltip />
 
@@ -130,3 +126,5 @@ export default function AQDataViewer({
     </div>
   );
 }
+
+need to add a change x axis shoud rotate 45 angle
