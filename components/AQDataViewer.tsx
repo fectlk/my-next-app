@@ -126,5 +126,3 @@ export default function AQDataViewer({
     </div>
   );
 }
-
-need to add a change x axis shoud rotate 45 angle
