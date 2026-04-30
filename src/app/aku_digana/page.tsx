@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../../lib/supabaseClient";
-import AQDataViewer from "../../../components/AQDataViewer";
+import { supabase } from "../../lib/supabaseClient";
+import AQDataViewer from "../../components/AQDataViewer";
 
 type StationKey =
   | "akurana_av_outdoor"
