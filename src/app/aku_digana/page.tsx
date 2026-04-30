@@ -4,14 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import AQDataViewer from "../../components/AQDataViewer";
 
-// Station keys
 type StationKey =
   | "akurana_av_outdoor"
   | "digana"
   | "akurana_pa"
   | "akurana_av_downstairs";
 
-// Labels
 const stationMap: Record<StationKey, string> = {
   akurana_av_outdoor: "Akurana AV Outdoor",
   digana: "Digana",
@@ -19,7 +17,6 @@ const stationMap: Record<StationKey, string> = {
   akurana_av_downstairs: "Akurana AV Downstairs",
 };
 
-// DB row type
 type AQRow = {
   date: string;
   akurana_av_outdoor: number | string;
@@ -64,7 +61,6 @@ export default function AQTrendsPage() {
   });
   const [latestDate, setLatestDate] = useState("");
 
-  // Fetch latest reading on mount
   useEffect(() => {
     const fetchLatest = async () => {
       const { data, error } = await supabase
@@ -86,10 +82,9 @@ export default function AQTrendsPage() {
     fetchLatest();
   }, []);
 
-  // Fetch chart data
   const fetchChartData = useCallback(async () => {
     if (!fromDate || !toDate) {
-      alert("Please select date range");
+      alert("Please select both dates first");
       return;
     }
     setLoading(true);
@@ -127,7 +122,6 @@ export default function AQTrendsPage() {
     }
   }, [selectedStation]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // CSV DOWNLOAD
   const downloadCSV = () => {
     if (chartData.length === 0) {
       alert("No data to download");
@@ -155,49 +149,52 @@ export default function AQTrendsPage() {
   const minAQI = chartData.length > 0 ? Math.min(...chartData.map((d) => d.aqi)) : null;
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div style={{ minHeight: "100vh", backgroundColor: "#f3f4f6", padding: "40px 16px" }}>
+      <div style={{ maxWidth: "960px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "32px" }}>
 
         {/* Header */}
-        <div className="text-center pt-2">
-          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#1f2937", margin: "0 0 8px 0" }}>
             Air Quality Dashboard
           </h1>
-          <p className="text-gray-400 text-sm mt-2">
+          <p style={{ fontSize: "14px", color: "#9ca3af", margin: 0 }}>
             Akurana &amp; Digana Monitoring Stations
           </p>
         </div>
 
-        {/* Latest Reading Cards */}
+        {/* Latest Cards */}
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">
+          <p style={{ fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "600", marginBottom: "12px" }}>
             Latest update {latestDate ? `— ${latestDate}` : ""}
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
             {(Object.keys(stationMap) as StationKey[]).map((key) => {
               const val = latestData[key];
               const color = val !== null ? getAQIColor(val) : "#9ca3af";
               const label = val !== null ? getAQILabel(val) : "N/A";
+              const isSelected = selectedStation === key;
               return (
                 <button
                   key={key}
                   onClick={() => setSelectedStation(key)}
-                  className={`rounded-2xl p-5 text-left transition-all border-2 bg-white shadow-sm hover:shadow-md ${
-                    selectedStation === key
-                      ? "border-blue-500"
-                      : "border-transparent hover:border-gray-200"
-                  }`}
+                  style={{
+                    backgroundColor: "#ffffff",
+                    border: isSelected ? "2px solid #3b82f6" : "2px solid transparent",
+                    borderRadius: "16px",
+                    padding: "20px",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                    transition: "border-color 0.15s",
+                  }}
                 >
-                  <p className="text-xs text-gray-400 font-medium mb-2 truncate">
+                  <p style={{ fontSize: "11px", color: "#9ca3af", fontWeight: "600", marginBottom: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {stationMap[key]}
                   </p>
-                  <p className="text-3xl font-bold leading-none" style={{ color }}>
+                  <p style={{ fontSize: "32px", fontWeight: "700", color, margin: "0 0 10px 0", lineHeight: 1 }}>
                     {val !== null ? val : "—"}
                   </p>
-                  <span
-                    className="text-xs font-semibold px-2 py-1 rounded-full mt-3 inline-block"
-                    style={{ backgroundColor: color + "22", color }}
-                  >
+                  <span style={{ fontSize: "11px", fontWeight: "600", padding: "4px 10px", borderRadius: "999px", backgroundColor: color + "22", color }}>
                     {label}
                   </span>
                 </button>
@@ -207,55 +204,82 @@ export default function AQTrendsPage() {
         </div>
 
         {/* Controls */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">
+        <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+          <p style={{ fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "600", marginBottom: "16px" }}>
             Filter Data
           </p>
-          <div className="flex flex-wrap gap-4 items-end">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">Station</label>
-              <select
-                value={selectedStation}
-                onChange={(e) => setSelectedStation(e.target.value as StationKey)}
-                className="border border-gray-200 px-4 py-2.5 rounded-xl text-sm min-w-[190px] bg-gray-50 text-gray-700"
-              >
-                {Object.entries(stationMap).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">From</label>
+          {/* Station select */}
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontSize: "12px", color: "#6b7280", fontWeight: "500", marginBottom: "6px" }}>
+              Station
+            </label>
+            <select
+              value={selectedStation}
+              onChange={(e) => setSelectedStation(e.target.value as StationKey)}
+              style={{ width: "100%", maxWidth: "300px", border: "1px solid #e5e7eb", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", backgroundColor: "#f9fafb", color: "#374151" }}
+            >
+              {Object.entries(stationMap).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date pickers + buttons in a row */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "flex-end" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "12px", color: "#6b7280", fontWeight: "500", marginBottom: "6px" }}>
+                From
+              </label>
               <input
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="border border-gray-200 px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-700"
+                style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", backgroundColor: "#f9fafb", color: "#374151" }}
               />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-gray-500 font-medium">To</label>
+            <div>
+              <label style={{ display: "block", fontSize: "12px", color: "#6b7280", fontWeight: "500", marginBottom: "6px" }}>
+                To
+              </label>
               <input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="border border-gray-200 px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-700"
+                style={{ border: "1px solid #e5e7eb", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", backgroundColor: "#f9fafb", color: "#374151" }}
               />
             </div>
 
             <button
               onClick={fetchChartData}
               disabled={loading}
-              className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              style={{
+                backgroundColor: loading ? "#93c5fd" : "#2563eb",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "10px",
+                padding: "10px 24px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
             >
               {loading ? "Loading..." : "Generate Chart"}
             </button>
 
             <button
               onClick={downloadCSV}
-              className="border border-gray-200 text-gray-600 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+              style={{
+                backgroundColor: "#ffffff",
+                color: "#374151",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                padding: "10px 24px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+              }}
             >
               Download CSV
             </button>
@@ -264,20 +288,17 @@ export default function AQTrendsPage() {
 
         {/* Stats Row */}
         {chartData.length > 0 && (
-          <div className="grid grid-cols-3 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
             {[
               { label: "Average AQI", value: avgAQI },
               { label: "Max AQI", value: maxAQI },
               { label: "Min AQI", value: minAQI },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white rounded-2xl shadow-sm p-6 text-center">
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">
+              <div key={label} style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "24px", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+                <p style={{ fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "600", marginBottom: "10px" }}>
                   {label}
                 </p>
-                <p
-                  className="text-3xl font-bold"
-                  style={{ color: value !== null ? getAQIColor(value) : "#9ca3af" }}
-                >
+                <p style={{ fontSize: "32px", fontWeight: "700", color: value !== null ? getAQIColor(value) : "#9ca3af", margin: 0 }}>
                   {value ?? "—"}
                 </p>
               </div>
@@ -286,13 +307,13 @@ export default function AQTrendsPage() {
         )}
 
         {/* Chart */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-700">
+        <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h2 style={{ fontSize: "15px", fontWeight: "600", color: "#374151", margin: 0 }}>
               {stationMap[selectedStation]} — AQI Trend
             </h2>
             {chartData.length > 0 && (
-              <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+              <span style={{ fontSize: "12px", color: "#9ca3af", backgroundColor: "#f3f4f6", padding: "4px 12px", borderRadius: "999px" }}>
                 {chartData.length} days
               </span>
             )}
@@ -306,44 +327,40 @@ export default function AQTrendsPage() {
               toDate={toDate}
             />
           ) : (
-            <div className="h-52 flex flex-col items-center justify-center text-gray-300 border-2 border-dashed border-gray-200 rounded-xl gap-2">
-              <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5l4.5-4.5 3 3 4.5-6 3 3.75" />
-              </svg>
-              <span className="text-sm">Select a date range and click Generate Chart</span>
+            <div style={{ height: "180px", display: "flex", alignItems: "center", justifyContent: "center", border: "2px dashed #e5e7eb", borderRadius: "12px", color: "#d1d5db", fontSize: "14px" }}>
+              Select a date range and click Generate Chart
             </div>
           )}
         </div>
 
         {/* Recent Data Table */}
         {chartData.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="font-semibold text-gray-700 mb-4">Recent Readings</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+          <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+            <h2 style={{ fontSize: "15px", fontWeight: "600", color: "#374151", margin: "0 0 16px 0" }}>
+              Recent Readings
+            </h2>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
                 <thead>
-                  <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b-2 border-gray-100">
-                    <th className="pb-3 pr-6 font-medium">Date</th>
-                    <th className="pb-3 pr-6 font-medium">AQI</th>
-                    <th className="pb-3 font-medium">Status</th>
+                  <tr style={{ borderBottom: "2px solid #f3f4f6" }}>
+                    <th style={{ textAlign: "left", padding: "8px 16px 12px 0", fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "600" }}>Date</th>
+                    <th style={{ textAlign: "left", padding: "8px 16px 12px 0", fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "600" }}>AQI</th>
+                    <th style={{ textAlign: "left", padding: "8px 0 12px 0", fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "600" }}>Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody>
                   {recentRows.map((row, i) => {
                     const color = getAQIColor(row.aqi);
                     return (
-                      <tr key={i} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-3 pr-6 text-gray-500 font-mono text-xs">
+                      <tr key={i} style={{ borderBottom: "1px solid #f9fafb" }}>
+                        <td style={{ padding: "12px 16px 12px 0", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
                           {row.date}
                         </td>
-                        <td className="py-3 pr-6 font-bold text-base" style={{ color }}>
+                        <td style={{ padding: "12px 16px 12px 0", fontWeight: "700", fontSize: "16px", color }}>
                           {row.aqi}
                         </td>
-                        <td className="py-3">
-                          <span
-                            className="text-xs px-3 py-1 rounded-full font-medium"
-                            style={{ backgroundColor: color + "22", color }}
-                          >
+                        <td style={{ padding: "12px 0" }}>
+                          <span style={{ fontSize: "12px", padding: "4px 12px", borderRadius: "999px", fontWeight: "600", backgroundColor: color + "22", color }}>
                             {getAQILabel(row.aqi)}
                           </span>
                         </td>
@@ -357,11 +374,11 @@ export default function AQTrendsPage() {
         )}
 
         {/* AQI Legend */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">
+        <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+          <p style={{ fontSize: "11px", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "600", marginBottom: "12px" }}>
             AQI Scale
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {[
               { range: "0–50", label: "Good", color: "#22c55e" },
               { range: "51–100", label: "Moderate", color: "#eab308" },
@@ -372,11 +389,10 @@ export default function AQTrendsPage() {
             ].map(({ range, label, color }) => (
               <div
                 key={range}
-                className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full font-medium"
-                style={{ backgroundColor: color + "22", color }}
+                style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: "600", padding: "6px 12px", borderRadius: "999px", backgroundColor: color + "22", color }}
               >
-                <span className="font-bold">{range}</span>
-                <span>{label}</span>
+                <span>{range}</span>
+                <span style={{ fontWeight: "400" }}>{label}</span>
               </div>
             ))}
           </div>
