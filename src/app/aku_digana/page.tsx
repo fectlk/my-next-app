@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import AQDataViewer from "../../../components/AQDataViewer";
 
+// Station keys
 type StationKey =
   | "akurana_av_outdoor"
   | "digana"
   | "akurana_pa"
   | "akurana_av_downstairs";
 
+// Labels
 const stationMap: Record<StationKey, string> = {
   akurana_av_outdoor: "Akurana AV Outdoor",
   digana: "Digana",
@@ -17,6 +19,7 @@ const stationMap: Record<StationKey, string> = {
   akurana_av_downstairs: "Akurana AV Downstairs",
 };
 
+// DB row type
 type AQRow = {
   date: string;
   akurana_av_outdoor: number | string;
@@ -46,19 +49,25 @@ function getAQILabel(aqi: number): string {
 export default function AQTrendsPage() {
   const [selectedStation, setSelectedStation] =
     useState<StationKey>("akurana_av_outdoor");
+
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [chartData, setChartData] = useState<{ date: string; aqi: number }[]>([]);
+
+  const [chartData, setChartData] = useState<
+    { date: string; aqi: number }[]
+  >([]);
+
   const [loading, setLoading] = useState(false);
+
   const [latestData, setLatestData] = useState<Record<StationKey, number | null>>({
     akurana_av_outdoor: null,
     digana: null,
     akurana_pa: null,
     akurana_av_downstairs: null,
   });
-  const [latestDate, setLatestDate] = useState<string>("");
+  const [latestDate, setLatestDate] = useState("");
 
-  // Fetch latest reading for all stations on mount
+  // Fetch latest reading on mount
   useEffect(() => {
     const fetchLatest = async () => {
       const { data, error } = await supabase
@@ -68,7 +77,6 @@ export default function AQTrendsPage() {
         .limit(1);
 
       if (error || !data || data.length === 0) return;
-
       const row = data[0] as AQRow;
       setLatestDate(row.date);
       setLatestData({
@@ -81,23 +89,26 @@ export default function AQTrendsPage() {
     fetchLatest();
   }, []);
 
-  // Auto-fetch chart when station changes (if date range is already set)
+  // Re-fetch chart when station changes if dates already set
   useEffect(() => {
     if (fromDate && toDate) {
       fetchChartData();
     }
   }, [selectedStation]);
 
+  // Fetch data
   const fetchChartData = async () => {
     if (!fromDate || !toDate) {
-      alert("Please select a date range");
+      alert("Please select date range");
       return;
     }
     setLoading(true);
 
     const { data, error } = await supabase
       .from("aq_data_akurana_digana")
-      .select("date, akurana_av_outdoor, digana, akurana_pa, akurana_av_downstairs")
+      .select(
+        "date, akurana_av_outdoor, digana, akurana_pa, akurana_av_downstairs"
+      )
       .gte("date", fromDate)
       .lte("date", toDate)
       .order("date", { ascending: true });
@@ -110,6 +121,7 @@ export default function AQTrendsPage() {
     }
 
     const rows = data as AQRow[];
+
     const formatted = rows.map((row) => {
       const value = row[selectedStation];
       return {
@@ -121,6 +133,7 @@ export default function AQTrendsPage() {
     setChartData(formatted);
   };
 
+  // CSV DOWNLOAD
   const downloadCSV = () => {
     if (chartData.length === 0) {
       alert("No data to download");
@@ -138,19 +151,14 @@ export default function AQTrendsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Recent rows (last 10 from chart data)
   const recentRows = [...chartData].reverse().slice(0, 10);
 
   const avgAQI =
     chartData.length > 0
       ? Math.round(chartData.reduce((sum, d) => sum + d.aqi, 0) / chartData.length)
       : null;
-
-  const maxAQI =
-    chartData.length > 0 ? Math.max(...chartData.map((d) => d.aqi)) : null;
-
-  const minAQI =
-    chartData.length > 0 ? Math.min(...chartData.map((d) => d.aqi)) : null;
+  const maxAQI = chartData.length > 0 ? Math.max(...chartData.map((d) => d.aqi)) : null;
+  const minAQI = chartData.length > 0 ? Math.min(...chartData.map((d) => d.aqi)) : null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -159,36 +167,33 @@ export default function AQTrendsPage() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-800">Air Quality Dashboard</h1>
-          <p className="text-gray-500 mt-1 text-sm">Akurana & Digana Monitoring Stations</p>
+          <p className="text-gray-400 text-sm mt-1">Akurana & Digana Monitoring Stations</p>
         </div>
 
         {/* Latest Reading Cards */}
         <div>
-          <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide font-semibold">
-            Latest Update {latestDate ? `— ${latestDate}` : ""}
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">
+            Latest update {latestDate ? `— ${latestDate}` : ""}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {(Object.keys(stationMap) as StationKey[]).map((key) => {
               const val = latestData[key];
               const color = val !== null ? getAQIColor(val) : "#9ca3af";
               const label = val !== null ? getAQILabel(val) : "N/A";
-              const isSelected = key === selectedStation;
-
               return (
                 <button
                   key={key}
                   onClick={() => setSelectedStation(key)}
-                  className={`rounded-xl p-4 text-left transition-all border-2 ${
-                    isSelected
-                      ? "border-blue-500 bg-white shadow-md"
-                      : "border-transparent bg-white hover:border-gray-200 shadow-sm"
+                  className={`rounded-xl p-4 text-left transition-all border-2 bg-white shadow-sm ${
+                    selectedStation === key
+                      ? "border-blue-500"
+                      : "border-transparent hover:border-gray-200"
                   }`}
                 >
-                  <p className="text-xs text-gray-500 font-medium mb-1 truncate">{stationMap[key]}</p>
-                  <p
-                    className="text-2xl font-bold"
-                    style={{ color }}
-                  >
+                  <p className="text-xs text-gray-500 font-medium mb-1 truncate">
+                    {stationMap[key]}
+                  </p>
+                  <p className="text-2xl font-bold" style={{ color }}>
                     {val !== null ? val : "—"}
                   </p>
                   <span
@@ -341,7 +346,7 @@ export default function AQTrendsPage() {
 
         {/* AQI Legend */}
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-xs text-gray-500 font-medium mb-2">AQI Scale</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">AQI Scale</p>
           <div className="flex flex-wrap gap-2">
             {[
               { range: "0–50", label: "Good", color: "#22c55e" },
@@ -353,10 +358,10 @@ export default function AQTrendsPage() {
             ].map(({ range, label, color }) => (
               <div
                 key={range}
-                className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full"
+                className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium"
                 style={{ backgroundColor: color + "22", color }}
               >
-                <span className="font-bold">{range}</span>
+                <span>{range}</span>
                 <span>{label}</span>
               </div>
             ))}
