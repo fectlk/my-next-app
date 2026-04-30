@@ -248,7 +248,7 @@ export default function AQTrendsPage() {
 
           <button
             onClick={downloadCSV}
-            className="border border-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium"
+            className="border border-gray-200 text-red-500 px-5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium"
           >
             Download CSV
           </button>
