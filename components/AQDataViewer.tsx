@@ -118,7 +118,7 @@ export default function AQDataViewer({
             dataKey="aqi"
             stroke="#ef4444"
             strokeWidth={2}
-            dot={{ r: 2 }}
+            dot={{ r: 0.7 }}
           />
         </LineChart>
       </ResponsiveContainer>
